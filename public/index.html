@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Music Desktop</title>
+  <!-- Google Fonts for Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Material Icons for Premium Look -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Custom Frameless Titlebar -->
+  <header id="titlebar">
+    <div class="titlebar-left">
+      <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="Toggle Sidebar (Ctrl+B)">
+        <span class="material-icons-round">menu</span>
+      </button>
+      <img src="icon.png" class="app-icon" alt="App Icon">
+      <span class="app-title">YouTube Music Desktop</span>
+    </div>
+    
+    <div class="titlebar-center">
+      <!-- Mode Toggle: Custom UI vs Native Browser -->
+      <div class="toggle-container">
+        <button id="toggle-focus-btn" class="toggle-btn active" title="Switch to Focus Mode Player">
+          <span class="material-icons-round">album</span> Focus Mode
+        </button>
+        <button id="toggle-browser-btn" class="toggle-btn" title="Switch to YouTube Music Browser">
+          <span class="material-icons-round">explore</span> Browser Mode
+        </button>
+      </div>
+    </div>
+
+    <div class="titlebar-right">
+      <button id="btn-open-eq" class="titlebar-tool-btn" title="10-Band Equalizer & Bass Boost">
+        <span class="material-icons-round">equalizer</span>
+      </button>
+      <button id="btn-open-sleep-timer" class="titlebar-tool-btn" title="Sleep Timer">
+        <span class="material-icons-round">bedtime</span>
+        <span id="titlebar-sleep-label" style="display: none; font-size: 10px; font-weight: 700; color: #ef4444; margin-left: 2px;"></span>
+      </button>
+      <button id="btn-toggle-pip" class="titlebar-tool-btn" title="Floating Picture-in-Picture Mini Player">
+        <span class="material-icons-round">picture_in_picture_alt</span>
+      </button>
+      <button id="btn-open-settings" class="titlebar-tool-btn" title="Theme Studio & Settings">
+        <span class="material-icons-round">palette</span>
+      </button>
+      <div class="titlebar-separator"></div>
+      <button id="min-btn" class="window-control" title="Minimize"><span class="material-icons-round">remove</span></button>
+      <button id="max-btn" class="window-control" title="Maximize"><span class="material-icons-round">crop_square</span></button>
+      <button id="close-btn" class="window-control close" title="Close"><span class="material-icons-round">close</span></button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div id="main-container">
+    
+    <!-- Sidebar Navigation (Active in Focus Mode) -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <span class="logo-text">FOCUS HUB</span>
+      </div>
+      <nav class="sidebar-menu">
+        <button id="nav-offline" class="nav-item active" title="Offline Music & Playlists">
+          <span class="material-icons-round">offline_pin</span>
+          <span>Offline Library</span>
+        </button>
+        <button id="nav-downloads" class="nav-item" title="Active & Resumable Downloads">
+          <span class="material-icons-round">download</span>
+          <span>Downloads</span>
+          <span class="sidebar-downloads-badge" id="sidebar-downloads-badge" style="display: none;">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Search Bar -->
+      <div class="search-box">
+        <span class="material-icons-round search-icon">search</span>
+        <input type="text" id="search-input" placeholder="Search YouTube Music..." autocomplete="off">
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section" id="sidebar-account-section">
+        <span class="section-title">ACCOUNT</span>
+      <div id="account-logged-out">
+          <button id="btn-sync-browser-cookies" class="sidebar-action-btn" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; margin-top: 4px; font-weight: 600; display: flex; align-items: center; gap: 8px; justify-content: center;" title="Sync already signed-in YouTube session from Opera GX / Chrome / Edge / Brave">
+            <span class="material-icons-round" style="font-size: 18px;">sync</span>
+            <span id="sync-browser-text">Sync Account from Browser</span>
+          </button>
+        </div>
+        <div id="account-logged-in" style="display: none; flex-direction: column; gap: 8px; margin-top: 4px;">
+          <div class="user-profile-badge" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+            <img id="user-avatar-img" src="" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: none;">
+            <div id="user-avatar-fallback" style="width: 32px; height: 32px; border-radius: 50%; background: #ef4444; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">U</div>
+            <div style="flex: 1; overflow: hidden;">
+              <div id="user-name-display" style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User Name</div>
+              <div id="user-email-display" style="font-size: 11px; color: #a1a1aa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">user@gmail.com</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-sync-browser-cookies-logged" class="sidebar-action-btn" style="flex: 1; padding: 6px 8px; font-size: 11px; color: #60a5fa; border-color: rgba(59,130,246,0.2); justify-content: center;" title="Sync YouTube Music Web session from your browser">
+              <span class="material-icons-round" style="font-size: 14px;">sync</span>
+              <span>Sync Web Session</span>
+            </button>
+            <button id="btn-google-logout" class="sidebar-action-btn" style="padding: 6px 8px; font-size: 11px; color: #ef4444; border-color: rgba(239,68,68,0.2); justify-content: center;" title="Sign out">
+              <span class="material-icons-round" style="font-size: 14px;">logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google YouTube Playlists Section (Shown when logged in) -->
+      <div class="sidebar-section" id="sidebar-yt-playlists-section" style="display: none; margin-top: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <span class="section-title" style="margin-bottom: 0;">YOUR PLAYLISTS</span>
+          <button id="btn-refresh-yt-playlists" class="bar-btn" style="padding: 2px; width: 22px; height: 22px; color: #a1a1aa;" title="Refresh Playlists"><span class="material-icons-round" style="font-size: 14px;">refresh</span></button>
+        </div>
+        <div id="sidebar-yt-playlists-list" style="display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto;">
+          <!-- User's Google Playlists injected here -->
+        </div>
+      </div>
+
+      <!-- Visualizer Theme controls -->
+      <div class="visualizer-settings">
+        <span class="section-title">VISUALIZER SETTINGS</span>
+        <div class="settings-group">
+          <label for="visualizer-style">Style</label>
+          <select id="visualizer-style">
+            <option value="bottom-line" selected>Bottom Glow Wave</option>
+            <option value="bars">Glow Bars</option>
+            <option value="wave">Oscilloscope</option>
+            <option value="circle">Neon Circle</option>
+            <option value="particles">Floating Particles</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label for="visualizer-sensitivity">Sensitivity</label>
+          <input type="range" id="visualizer-sensitivity" min="1" max="10" value="5">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content Workspace -->
+    <main id="content-area">
+      
+      <!-- Custom Focus Player View (Active by Default) -->
+      <div id="focus-player" class="content-view active">
+        <div class="focus-background-glow" id="focus-glow-bg"></div>
+        
+        <!-- Real-Time Clock Panel -->
+        <div id="focus-clock" class="focus-clock-container">
+          <div class="clock-day" id="clock-day">SUNDAY</div>
+          <div class="clock-date" id="clock-date">21 JUNE, 2026.</div>
+          <div class="clock-time" id="clock-time">- 13:38 -</div>
+        </div>
+
+        <!-- Minimalist Liquid-Glass Lyrics Panel -->
+        <div id="focus-lyrics-panel" class="focus-lyrics-container">
+          <div class="lyrics-header">
+            <span class="material-icons-round lyrics-header-icon">lyrics</span>
+            <span class="lyrics-header-title">LYRICS</span>
+            <button id="close-lyrics-btn" class="lyrics-close-btn" title="Close Lyrics"><span class="material-icons-round">close</span></button>
+          </div>
+          <div id="lyrics-content" class="lyrics-body">
+            <p class="lyrics-placeholder">Click Lyrics in the bottom bar to load lyrics for the playing track.</p>
+          </div>
+        </div>
+
+        <div class="player-layout">
+          <!-- Album Art & Vinyl Simulation -->
+          <div class="art-container">
+            <div class="vinyl-record" id="vinyl-disc">
+              <img id="focus-art" src="https://music.youtube.com/img/on_platform_logo_dark.svg" alt="Album Artwork">
+              <div class="vinyl-center"></div>
+            </div>
+          </div>
+
+          <!-- Track Metadata and Details -->
+          <div class="track-details-panel">
+            <div class="meta-container">
+              <h1 id="focus-title" class="glowing-text">No Track Playing</h1>
+              <h2 id="focus-artist">Open Browser Mode to play music</h2>
+              <span id="focus-album" class="album-name">YouTube Music</span>
+            </div>
+            
+            <div class="instruction-banner" id="instruction-message">
+              <span class="material-icons-round">info</span>
+              <p>Make sure you are signed in. Go to <strong>Browser Mode</strong> to pick a song or sign in to your Google Account!</p>
+            </div>
+          </div>
+
+          <!-- Canvas-based Audio Visualizer (positioned at the bottom of the card) -->
+          <div class="canvas-container">
+            <canvas id="visualizer-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- YouTube Music Native Webview View -->
+      <div id="webview-view" class="content-view">
+        <!-- We use standard Chrome UA to bypass secure browser login blocks, and preload scripts -->
+        <webview 
+          id="ytm-webview" 
+          src="https://music.youtube.com/" 
+          preload="../webview-preload.js"
+          allowpopups="true"
+          useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        ></webview>
+
+        <!-- Floating Browser Mode Quick Action Dock -->
+        <div id="browser-mode-quick-dock" class="browser-quick-dock">
+          <button id="dock-btn-offline-lib" class="dock-btn" title="Open Offline Library">
+            <span class="material-icons-round">offline_pin</span>
+            <span class="dock-btn-label">Offline Library</span>
+          </button>
+          <button id="dock-btn-downloads" class="dock-btn" title="Open Downloads Manager">
+            <span class="material-icons-round">download</span>
+            <span class="dock-btn-label">Downloads</span>
+            <span class="downloads-badge" id="dock-downloads-badge" style="display: none;">0</span>
+          </button>
+          <button id="dock-btn-pip" class="dock-btn" title="Floating Mini Player">
+            <span class="material-icons-round">picture_in_picture_alt</span>
+            <span class="dock-btn-label">Mini PiP</span>
+          </button>
+          <button id="dock-btn-eq" class="dock-btn" title="Equalizer & Bass Boost">
+            <span class="material-icons-round">equalizer</span>
+            <span class="dock-btn-label">EQ</span>
+          </button>
+          <button id="dock-btn-download-song" class="dock-btn" title="Download Current Song to Offline Library">
+            <span class="material-icons-round">add_circle</span>
+            <span class="dock-btn-label">Download Song</span>
+          </button>
+          <button id="dock-btn-download-playlist" class="dock-btn" title="Download Active Playlist to Offline Library">
+            <span class="material-icons-round">queue_music</span>
+            <span class="dock-btn-label">Download Playlist</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Offline Library View -->
+      <div id="offline-library-view" class="content-view">
+        <div class="offline-header" style="display: flex; flex-direction: column; padding: 24px 24px 16px 24px; gap: 16px; width: 100%; box-sizing: border-box;">
+          <div style="display: flex; align-items: center; width: 100%; gap: 16px;">
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; white-space: nowrap;">Offline Library</h2>
+            <div class="offline-search-box" style="flex-grow: 1; max-width: 400px;">
+              <span class="material-icons-round search-icon">search</span>
+              <input type="text" id="offline-search-input" placeholder="Search downloaded songs or playlists..." autocomplete="off">
+            </div>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+              <button id="btn-new-playlist" class="offline-action-btn primary" title="Create New Playlist">
+                <span class="material-icons-round" style="font-size: 18px;">add</span>
+                <span>New Playlist</span>
+              </button>
+              <button id="btn-auto-covers" class="offline-action-btn" title="Automatically download covers for tracks without artwork">
+                <span class="material-icons-round" style="font-size: 18px;">image_search</span>
+                <span>Auto-Fetch Covers</span>
+              </button>
+              <button id="btn-refresh-offline" class="bar-btn" title="Refresh Library"><span class="material-icons-round">refresh</span></button>
+            </div>
+          </div>
+          
+          <!-- YouTube Music Category Filter Chips -->
+          <div class="offline-filter-chips" style="display: flex; gap: 10px; align-items: center;">
+            <button class="chip-btn active" data-filter="all">All</button>
+            <button class="chip-btn" data-filter="songs">Songs</button>
+            <button class="chip-btn" data-filter="playlists">Playlists</button>
+            <button class="chip-btn" data-filter="downloads" id="chip-btn-downloads" style="display: inline-flex; align-items: center; gap: 6px;">
+              <span>Downloads</span>
+              <span class="downloads-badge" id="downloads-badge" style="display: none;">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="offline-main-content" style="width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+          <div id="offline-track-list" class="offline-grid-container" style="padding: 0 24px 32px 24px; overflow-y: auto; flex: 1;">
+            <!-- Grid Cards Injected Here -->
+          </div>
+        </div>
+
+        <!-- Playlist Detail View -->
+        <div id="playlist-detail-view" style="display: none; padding: 0 24px 32px 24px; overflow-y: auto; flex: 1; width: 100%; box-sizing: border-box;">
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 20px;">
+            <button id="btn-close-playlist-detail" class="bar-btn" title="Back to Library" style="background: rgba(255,255,255,0.08);"><span class="material-icons-round">arrow_back</span></button>
+            
+            <!-- Playlist Cover with Hover Change Overlay -->
+            <div id="playlist-detail-cover-wrapper" style="width: 80px; height: 80px; border-radius: 14px; overflow: hidden; position: relative; cursor: pointer; flex-shrink: 0; background: #18181b;" title="Click to Change Cover Art">
+              <img id="playlist-detail-cover-img" src="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="ytm-card-fallback-thumb" style="display: none;"><span class="material-icons-round" style="font-size: 36px;">queue_music</span></div>
+              <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">
+                <span class="material-icons-round" style="color: #fff; font-size: 24px;">photo_camera</span>
+              </div>
+            </div>
+
+            <div style="flex-grow: 1;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h2 id="playlist-detail-title" style="font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: #fff;">Playlist Name</h2>
+                <button id="btn-rename-playlist-detail" class="bar-btn" style="padding: 4px;" title="Rename Playlist"><span class="material-icons-round" style="font-size: 18px; color: #a1a1aa;">edit</span></button>
+              </div>
+              <span id="playlist-detail-count" style="font-size: 13px; color: #a1a1aa;">0 tracks</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button id="btn-add-songs-playlist" class="offline-action-btn" title="Add Downloaded Songs">
+                <span class="material-icons-round" style="font-size: 18px;">playlist_add</span>
+                <span>+ Add Songs</span>
+              </button>
+              <button id="btn-change-cover-playlist" class="offline-action-btn" title="Change Cover (Upload / AI)">
+                <span class="material-icons-round" style="font-size: 18px;">palette</span>
+                <span>Change Cover</span>
+              </button>
+              <button id="btn-play-all-playlist" class="offline-action-btn primary" title="Play All Tracks">
+                <span class="material-icons-round" style="font-size: 18px;">play_arrow</span>
+                <span>Play All</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="playlist-detail-track-list" class="track-list">
+            <!-- Playlist Tracks Injected Here -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+    
+    <!-- Internal Audio Player for offline tracks -->
+    <audio id="offline-audio-player" style="display: none;"></audio>
+
+  </div>
+
+  <!-- Modal: Create New Playlist -->
+  <div id="modal-create-playlist" class="ytm-modal-overlay">
+    <div class="ytm-modal-box">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">Create Playlist</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-create-playlist"><span class="material-icons-round">close</span></button>
+      </div>
+      <input type="text" id="input-new-playlist-name" class="ytm-modal-input" placeholder="Enter playlist title (e.g. Chill Beats)" autocomplete="off">
+      <div class="ytm-modal-actions">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-create-playlist">Cancel</button>
+        <button id="btn-confirm-create-playlist" class="ytm-modal-btn confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Rename Playlist -->
+  <div id="modal-rename-playlist" class="ytm-modal-overlay">
+    <div class="ytm-modal-box">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">Rename Playlist</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-rename-playlist"><span class="material-icons-round">close</span></button>
+      </div>
+      <input type="text" id="input-rename-playlist-name" class="ytm-modal-input" placeholder="New playlist title" autocomplete="off">
+      <div class="ytm-modal-actions">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-rename-playlist">Cancel</button>
+        <button id="btn-confirm-rename-playlist" class="ytm-modal-btn confirm">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Song to Playlist Selector -->
+  <div id="modal-add-to-playlist" class="ytm-modal-overlay">
+    <div class="ytm-modal-box">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">Add to Playlist</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-add-to-playlist"><span class="material-icons-round">close</span></button>
+      </div>
+      <p style="font-size: 13px; color: #a1a1aa;">Select a playlist to add this track into:</p>
+      <div id="modal-playlist-select-list" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+        <!-- Playlist options injected here -->
+      </div>
+      <div class="ytm-modal-actions">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-add-to-playlist">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Songs from Library to Current Playlist -->
+  <div id="modal-add-songs-current" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 540px;">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">Add Songs to Playlist</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-add-songs-current"><span class="material-icons-round">close</span></button>
+      </div>
+      <p style="font-size: 13px; color: #a1a1aa;">Select downloaded songs to add into this playlist:</p>
+      <div id="modal-available-songs-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+        <!-- Checkbox list of songs -->
+      </div>
+      <div class="ytm-modal-actions">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-add-songs-current">Cancel</button>
+        <button id="btn-confirm-add-selected-songs" class="ytm-modal-btn confirm">Add Selected Songs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Change Cover Choice (Upload / AI) -->
+  <div id="modal-change-cover-choice" class="ytm-modal-overlay">
+    <div class="ytm-modal-box">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">Change Playlist Cover</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-change-cover-choice"><span class="material-icons-round">close</span></button>
+      </div>
+      <div style="display: flex; gap: 16px; margin: 12px 0;">
+        <button id="btn-choice-upload-cover" class="offline-action-btn" style="flex: 1; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-radius: 16px; background: rgba(255,255,255,0.04);">
+          <span class="material-icons-round" style="font-size: 32px; color: #ef4444;">upload_file</span>
+          <span style="font-size: 14px; font-weight: 700;">Upload Image</span>
+          <span style="font-size: 11px; color: #a1a1aa;">Choose from your computer</span>
+        </button>
+        <button id="btn-choice-ai-cover" class="offline-action-btn" style="flex: 1; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-radius: 16px; background: rgba(255,255,255,0.04);">
+          <span class="material-icons-round" style="font-size: 32px; color: #ef4444;">auto_awesome</span>
+          <span style="font-size: 14px; font-weight: 700;">Generate with AI</span>
+          <span style="font-size: 11px; color: #a1a1aa;">Create artwork with text prompt</span>
+        </button>
+      </div>
+      <div class="ytm-modal-actions">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-change-cover-choice">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: AI Cover Art Generator -->
+  <div id="modal-ai-cover" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 440px;">
+      <div class="ytm-modal-header">
+        <h3 class="ytm-modal-title">AI Cover Generator</h3>
+        <button class="bar-btn modal-close-btn" data-modal="modal-ai-cover"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="ai-cover-preview-wrapper">
+        <img id="ai-cover-preview-img" class="ai-cover-img" src="" style="display: none;">
+        <div id="ai-cover-placeholder" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: #71717a;">
+          <span class="material-icons-round" style="font-size: 48px;">auto_awesome</span>
+          <span style="font-size: 12px;">Type a prompt & click Generate</span>
+        </div>
+        <div id="ai-cover-spinner" class="ai-loading-spinner">
+          <span class="material-icons-round" style="font-size: 36px; animation: spin 1s linear infinite;">autorenew</span>
+          <span style="font-size: 12px; font-weight: 600;">Generating Artwork...</span>
+        </div>
+      </div>
+      <input type="text" id="input-ai-prompt" class="ytm-modal-input" placeholder="Prompt (e.g. Cyberpunk neon aesthetic music album cover)" autocomplete="off">
+      <div class="ytm-modal-actions" style="justify-content: space-between;">
+        <button id="btn-generate-ai-cover" class="ytm-modal-btn" style="background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; gap: 6px;">
+          <span class="material-icons-round" style="font-size: 16px;">bolt</span>
+          <span>Generate</span>
+        </button>
+        <div style="display: flex; gap: 10px;">
+          <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-ai-cover">Cancel</button>
+          <button id="btn-save-ai-cover" class="ytm-modal-btn confirm" style="display: none;">Apply Cover</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sync Browser Session -->
+  <div id="modal-sync-browser" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 440px;">
+      <div class="ytm-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons-round" style="color: #ef4444; font-size: 24px;">sync</span>
+          <h3 class="ytm-modal-title" style="margin: 0;">Sync Account from Browser</h3>
+        </div>
+        <button class="bar-btn modal-close-btn" data-modal="modal-sync-browser"><span class="material-icons-round">close</span></button>
+      </div>
+      <div style="padding: 16px 0; color: #d4d4d8; font-size: 13px; line-height: 1.6;">
+        <p style="margin-bottom: 12px;">This will securely import your signed-in YouTube Music account and playlists from your installed browser (<strong>Opera GX, Chrome, Edge, Brave</strong>).</p>
+        
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <strong style="color: #ef4444; display: block; margin-bottom: 4px;">Step 1: Close Your Browser</strong>
+          Please <strong>close your web browser</strong> (Opera GX / Chrome / Edge) for a moment so Windows unlocks the session file.
+        </div>
+        
+        <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Once your browser is closed, click <strong>Sync & Log In</strong> below.</p>
+      </div>
+      <div class="ytm-modal-actions" style="justify-content: flex-end; gap: 10px;">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-sync-browser">Cancel</button>
+        <button id="btn-confirm-sync-modal" class="ytm-modal-btn confirm" style="display: flex; align-items: center; gap: 6px;">
+          <span class="material-icons-round" style="font-size: 16px;">sync</span>
+          <span id="btn-confirm-sync-text">Sync & Log In</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 10-Band Graphic Equalizer & Bass Boost -->
+  <div id="modal-equalizer" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 680px; width: 95%;">
+      <div class="ytm-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="material-icons-round" style="color: var(--color-primary, #ef4444); font-size: 24px;">equalizer</span>
+          <h3 class="ytm-modal-title" style="margin: 0;">10-Band Equalizer & Acoustic Studio</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <label class="eq-toggle-switch">
+            <input type="checkbox" id="eq-master-toggle" checked>
+            <span class="eq-toggle-slider"></span>
+          </label>
+          <button class="bar-btn modal-close-btn" data-modal="modal-equalizer"><span class="material-icons-round">close</span></button>
+        </div>
+      </div>
+
+      <!-- Presets Selector -->
+      <div class="eq-presets-container" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 12px 0;">
+        <button class="eq-preset-chip active" data-preset="flat">Flat</button>
+        <button class="eq-preset-chip" data-preset="bass-boost">Bass Boost Extreme</button>
+        <button class="eq-preset-chip" data-preset="vocal">Vocal Clarifier</button>
+        <button class="eq-preset-chip" data-preset="electronic">Electronic / EDM</button>
+        <button class="eq-preset-chip" data-preset="rock">Rock</button>
+        <button class="eq-preset-chip" data-preset="hiphop">Hip Hop</button>
+        <button class="eq-preset-chip" data-preset="acoustic">Acoustic</button>
+        <button class="eq-preset-chip" data-preset="jazz">Jazz</button>
+      </div>
+
+      <!-- EQ Sliders Bank -->
+      <div class="eq-sliders-wrapper">
+        <!-- Preamp Column -->
+        <div class="eq-band-col preamp-col">
+          <span class="eq-band-val" id="eq-val-preamp">0dB</span>
+          <div class="eq-slider-track">
+            <input type="range" class="eq-slider-v" id="eq-slider-preamp" min="-12" max="12" step="0.5" value="0" orient="vertical">
+          </div>
+          <span class="eq-band-label">PREAMP</span>
+        </div>
+
+        <div class="eq-divider-v"></div>
+
+        <!-- 10 Frequency Bands -->
+        <div class="eq-bands-group" id="eq-bands-group">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="eq-divider-v"></div>
+
+        <!-- Bass Boost Extra Knob/Column -->
+        <div class="eq-band-col bass-col">
+          <span class="eq-band-val" id="eq-val-bass">0dB</span>
+          <div class="eq-slider-track">
+            <input type="range" class="eq-slider-v bass" id="eq-slider-bass" min="0" max="12" step="0.5" value="0" orient="vertical">
+          </div>
+          <span class="eq-band-label">BASS+</span>
+        </div>
+      </div>
+
+      <div class="ytm-modal-actions" style="justify-content: space-between; margin-top: 20px;">
+        <button id="btn-reset-eq" class="ytm-modal-btn" style="background: rgba(255,255,255,0.06); color: #a1a1aa;">Reset to Flat</button>
+        <button class="ytm-modal-btn confirm modal-close-btn" data-modal="modal-equalizer">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Smart Sleep Timer -->
+  <div id="modal-sleep-timer" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 440px;">
+      <div class="ytm-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons-round" style="color: #ef4444; font-size: 24px;">bedtime</span>
+          <h3 class="ytm-modal-title" style="margin: 0;">Smart Sleep Timer</h3>
+        </div>
+        <button class="bar-btn modal-close-btn" data-modal="modal-sleep-timer"><span class="material-icons-round">close</span></button>
+      </div>
+
+      <!-- Active Timer Banner -->
+      <div id="sleep-timer-active-card" style="display: none; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center;">
+        <div style="font-size: 12px; color: #a1a1aa; margin-bottom: 4px;">PLAYBACK WILL PAUSE IN</div>
+        <div id="sleep-timer-countdown" style="font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 700; color: #ef4444; letter-spacing: 1px;">00:00</div>
+        <button id="btn-cancel-sleep-timer" class="ytm-modal-btn" style="background: rgba(255,255,255,0.1); color: #fff; margin-top: 12px; font-size: 12px; padding: 6px 14px;">Cancel Timer</button>
+      </div>
+
+      <!-- Timer Selector Grid -->
+      <div id="sleep-timer-setup">
+        <p style="font-size: 13px; color: #a1a1aa; margin: 12px 0 16px 0;">Automatically pauses music after a set time or when the current track finishes.</p>
+        
+        <div class="sleep-timer-grid">
+          <button class="sleep-timer-chip" data-mins="15">15 Minutes</button>
+          <button class="sleep-timer-chip" data-mins="30">30 Minutes</button>
+          <button class="sleep-timer-chip" data-mins="45">45 Minutes</button>
+          <button class="sleep-timer-chip" data-mins="60">1 Hour</button>
+          <button class="sleep-timer-chip" data-mins="90">1.5 Hours</button>
+          <button class="sleep-timer-chip" data-mins="end-of-track">End of Track</button>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
+          <input type="number" id="input-custom-sleep-mins" class="ytm-modal-input" placeholder="Custom mins (e.g. 20)" min="1" max="600" style="margin-bottom: 0; flex: 1;">
+          <button id="btn-start-custom-sleep" class="ytm-modal-btn confirm" style="padding: 10px 16px; white-space: nowrap;">Start</button>
+        </div>
+      </div>
+
+      <div class="ytm-modal-actions" style="justify-content: flex-end; margin-top: 20px;">
+        <button class="ytm-modal-btn cancel modal-close-btn" data-modal="modal-sleep-timer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Theme Studio & App Settings -->
+  <div id="modal-settings" class="ytm-modal-overlay">
+    <div class="ytm-modal-box" style="max-width: 580px; width: 95%;">
+      <div class="ytm-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons-round" style="color: var(--color-primary, #ef4444); font-size: 24px;">palette</span>
+          <h3 class="ytm-modal-title" style="margin: 0;">Theme Studio & Settings</h3>
+        </div>
+        <button class="bar-btn modal-close-btn" data-modal="modal-settings"><span class="material-icons-round">close</span></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px; padding: 16px 0; max-height: 65vh; overflow-y: auto;">
+        <!-- 1. Themes Studio -->
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: #a1a1aa; letter-spacing: 1px; display: block; margin-bottom: 10px;">COLOR THEME PALETTES</span>
+          <div class="theme-cards-grid">
+            <div class="theme-card active" data-theme="crimson">
+              <div class="theme-color-preview" style="background: #ef4444;"></div>
+              <div class="theme-card-meta">
+                <span class="theme-card-name">Cyberpunk Crimson</span>
+                <span class="theme-card-sub">Vibrant Dark Red (Default)</span>
+              </div>
+            </div>
+            <div class="theme-card" data-theme="cyan">
+              <div class="theme-color-preview" style="background: #06b6d4;"></div>
+              <div class="theme-card-meta">
+                <span class="theme-card-name">Neon Tokyo Cyan</span>
+                <span class="theme-card-sub">Electric Blue & Cyan</span>
+              </div>
+            </div>
+            <div class="theme-card" data-theme="emerald">
+              <div class="theme-color-preview" style="background: #10b981;"></div>
+              <div class="theme-card-meta">
+                <span class="theme-card-name">Matrix Emerald</span>
+                <span class="theme-card-sub">Cyber Hacker Green</span>
+              </div>
+            </div>
+            <div class="theme-card" data-theme="synthwave">
+              <div class="theme-color-preview" style="background: #a855f7;"></div>
+              <div class="theme-card-meta">
+                <span class="theme-card-name">Synthwave Sunset</span>
+                <span class="theme-card-sub">Deep Purple & Magenta</span>
+              </div>
+            </div>
+            <div class="theme-card" data-theme="oled">
+              <div class="theme-color-preview" style="background: #ffffff;"></div>
+              <div class="theme-card-meta">
+                <span class="theme-card-name">OLED Pure Black</span>
+                <span class="theme-card-sub">Monochrome Minimalist</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Visualizer Preset Engine -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: #a1a1aa; letter-spacing: 1px; display: block; margin-bottom: 10px;">FOCUS AUDIO VISUALIZER STYLE</span>
+          <select id="select-settings-visualizer" class="ytm-modal-input" style="margin-bottom: 0;">
+            <option value="bottom-line">Bottom Glow Wave (Smooth Acoustic)</option>
+            <option value="bars">Audio Frequency Bars (Studio Glow)</option>
+            <option value="circular-ring">Circular Vinyl Ring (Vinyl Pulse)</option>
+            <option value="starfield">Cyberpunk Starfield (Particle Explosion)</option>
+          </select>
+        </div>
+
+        <!-- 3. Download Quality -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: #a1a1aa; letter-spacing: 1px; display: block; margin-bottom: 10px;">DOWNLOAD AUDIO QUALITY</span>
+          <select id="select-download-quality" class="ytm-modal-input" style="margin-bottom: 0;">
+            <option value="best">Best Available Quality (Opus 160kbps / MP3 320kbps)</option>
+            <option value="high">High Quality (MP3 256kbps)</option>
+            <option value="standard">Standard Quality (MP3 128kbps)</option>
+          </select>
+        </div>
+
+        <!-- 4. Discord Rich Presence Toggle -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-weight: 600; font-size: 13px; color: #fff;">Discord Rich Presence</div>
+            <div style="font-size: 12px; color: #a1a1aa;">Show current song and artist in your Discord status</div>
+          </div>
+          <label class="eq-toggle-switch">
+            <input type="checkbox" id="settings-discord-toggle" checked>
+            <span class="eq-toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- 5. Offline Maintenance Tools -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: #a1a1aa; letter-spacing: 1px; display: block; margin-bottom: 10px;">OFFLINE LIBRARY POWER TOOLS</span>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="btn-scan-duplicates" class="ytm-modal-btn" style="background: rgba(255,255,255,0.06); color: #fff; display: inline-flex; align-items: center; gap: 6px;">
+              <span class="material-icons-round" style="font-size: 16px;">content_copy</span>
+              <span>Scan & Clean Duplicates</span>
+            </button>
+            <button id="btn-sync-all-playlists" class="ytm-modal-btn" style="background: rgba(255,255,255,0.06); color: #fff; display: inline-flex; align-items: center; gap: 6px;">
+              <span class="material-icons-round" style="font-size: 16px;">sync</span>
+              <span>Sync All Online Playlists</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ytm-modal-actions" style="justify-content: flex-end;">
+        <button class="ytm-modal-btn confirm modal-close-btn" data-modal="modal-settings">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Playback Controls Bar -->
+  <footer id="player-bar">
+    
+    <!-- Mini Track info -->
+    <div class="player-left">
+      <img id="bar-art" src="https://music.youtube.com/img/on_platform_logo_dark.svg" alt="Cover Art">
+      <div class="bar-meta">
+        <div id="bar-title" class="scrolling-text">Not Playing</div>
+        <div id="bar-artist">YouTube Music</div>
+      </div>
+      <div class="rating-buttons">
+        <button id="btn-download" class="bar-btn" title="Download Track"><span class="material-icons-round">download</span></button>
+        <button id="btn-download-playlist" class="bar-btn" title="Download Playlist"><span class="material-icons-round">queue_music</span></button>
+        <button id="btn-dislike" class="bar-btn" title="Dislike"><span class="material-icons-round">thumb_down</span></button>
+        <button id="btn-like" class="bar-btn" title="Like"><span class="material-icons-round">thumb_up</span></button>
+      </div>
+    </div>
+
+    <!-- Main playback buttons & slider -->
+    <div class="player-center">
+      <div class="controls-row">
+        <button id="btn-shuffle" class="bar-btn" title="Shuffle"><span class="material-icons-round">shuffle</span></button>
+        <button id="btn-prev" class="bar-btn" title="Previous"><span class="material-icons-round">skip_previous</span></button>
+        <button id="btn-play-pause" class="bar-btn play-btn" title="Play"><span class="material-icons-round">play_arrow</span></button>
+        <button id="btn-next" class="bar-btn" title="Next"><span class="material-icons-round">skip_next</span></button>
+        <button id="btn-repeat" class="bar-btn" title="Repeat"><span class="material-icons-round">repeat</span></button>
+      </div>
+      
+      <div class="timeline-row">
+        <span id="current-time" class="time-label">0:00</span>
+        <div class="slider-container">
+          <input type="range" id="progress-slider" min="0" max="100" value="0">
+          <div class="slider-fill" id="progress-fill"></div>
+        </div>
+        <span id="total-duration" class="time-label">0:00</span>
+      </div>
+    </div>
+
+    <!-- Volume and mode shortcuts -->
+    <div class="player-right">
+      <button id="btn-volume-icon" class="bar-btn" title="Mute/Unmute"><span class="material-icons-round">volume_up</span></button>
+      <div class="slider-container volume-container">
+        <input type="range" id="volume-slider" min="0" max="100" value="50">
+        <div class="slider-fill" id="volume-fill"></div>
+      </div>
+      
+      <button id="btn-lyrics" class="bar-btn" title="Track Lyrics / Info"><span class="material-icons-round">lyrics</span></button>
+      <button id="btn-fullscreen" class="bar-btn" title="Fullscreen"><span class="material-icons-round">fullscreen</span></button>
+    </div>
+
+  </footer>
+
+  <!-- App Renderer logic -->
+  <script src="renderer.js"></script>
+</body>
+</html>

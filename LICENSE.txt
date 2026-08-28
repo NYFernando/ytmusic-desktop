@@ -1,0 +1,31 @@
+================================================================================
+YOUTUBE MUSIC DESKTOP
+================================================================================
+Developed & Created by: Nethum Fernando
+Version: 1.0.0 (Windows 11 Edition)
+Platform: Electron, Chromium, Web Audio DSP, Node.js
+
+--------------------------------------------------------------------------------
+ABOUT THIS APPLICATION
+--------------------------------------------------------------------------------
+YouTube Music Desktop is a next-generation desktop music player designed for
+audiophiles, gamers, and music lovers.
+
+KEY FEATURES INCLUDED:
+• 🎛️ 10-Band Graphic Equalizer & Acoustic Studio with 8 Presets & Bass Boost
+• 🪟 Picture-in-Picture (PiP) Frameless Floating Mini Player Widget
+• 📥 High-Speed Resumable Song & Playlist Offline Download Manager
+• 🎨 Theme Studio (Cyberpunk Crimson, Tokyo Cyan, Matrix Emerald, Synthwave, OLED)
+• ⏳ Smart Sleep Timer with smooth volume fade-out
+• ⌨️ Global System-Wide Keyboard Media Hotkeys
+• 💬 Discord Rich Presence Integration with live track artwork
+• 🔒 1-Click Cookie Account Sync (Zero setup / Zero Python required)
+
+--------------------------------------------------------------------------------
+LICENSE & TERMS
+--------------------------------------------------------------------------------
+This software is provided free for personal use and entertainment.
+All YouTube and YouTube Music trademarks and brand logos belong to Google LLC.
+
+Created with passion by Nethum Fernando.
+================================================================================

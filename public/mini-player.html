@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Music Mini Player</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+  <link rel="stylesheet" href="mini-player.css">
+</head>
+<body>
+  <div id="mini-container">
+    <!-- Draggable Header / Action Bar -->
+    <div id="mini-drag-region">
+      <span class="mini-app-title">YTM MINI</span>
+      <div class="mini-window-actions">
+        <button id="mini-btn-restore" title="Restore Main Window" class="mini-icon-btn">
+          <span class="material-icons-round">open_in_full</span>
+        </button>
+        <button id="mini-btn-close" title="Close Mini Player" class="mini-icon-btn close">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Player Row -->
+    <div id="mini-content">
+      <div id="mini-art-wrapper">
+        <img id="mini-art" src="https://music.youtube.com/img/on_platform_logo_dark.svg" alt="Album Art">
+        <div id="mini-art-fallback" style="display: none;">
+          <span class="material-icons-round">music_note</span>
+        </div>
+      </div>
+
+      <div id="mini-info">
+        <div id="mini-title">No Track Playing</div>
+        <div id="mini-artist">YouTube Music</div>
+        
+        <!-- Controls Row -->
+        <div id="mini-controls">
+          <button id="mini-btn-prev" class="mini-ctrl-btn" title="Previous Track">
+            <span class="material-icons-round">skip_previous</span>
+          </button>
+          <button id="mini-btn-play" class="mini-ctrl-btn primary" title="Play / Pause">
+            <span class="material-icons-round">play_arrow</span>
+          </button>
+          <button id="mini-btn-next" class="mini-ctrl-btn" title="Next Track">
+            <span class="material-icons-round">skip_next</span>
+          </button>
+          <button id="mini-btn-like" class="mini-ctrl-btn" title="Like">
+            <span class="material-icons-round">thumb_up</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mini Progress Bar -->
+    <div id="mini-progress-bg">
+      <div id="mini-progress-fill"></div>
+    </div>
+  </div>
+
+  <script src="mini-player.js"></script>
+</body>
+</html>
