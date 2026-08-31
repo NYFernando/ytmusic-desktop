@@ -48,17 +48,16 @@ function getBrowserRoots() {
   const defaultName = detectDefaultBrowserName();
 
   const allBrowsers = [
+    { name: 'Opera GX', path: path.join(appData, 'Opera Software', 'Opera GX Stable') },
     { name: 'Google Chrome', path: path.join(localAppData, 'Google', 'Chrome', 'User Data') },
     { name: 'Microsoft Edge', path: path.join(localAppData, 'Microsoft', 'Edge', 'User Data') },
-    { name: 'Opera GX', path: path.join(appData, 'Opera Software', 'Opera GX Stable') },
-    { name: 'Brave', path: path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'User Data') },
     { name: 'Opera', path: path.join(appData, 'Opera Software', 'Opera Stable') },
+    { name: 'Brave', path: path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'User Data') },
     { name: 'Vivaldi', path: path.join(localAppData, 'Vivaldi', 'User Data') },
     { name: 'Chromium', path: path.join(localAppData, 'Chromium', 'User Data') },
     { name: 'Yandex', path: path.join(localAppData, 'Yandex', 'YandexBrowser', 'User Data') },
     { name: 'Google Chrome Beta', path: path.join(localAppData, 'Google', 'Chrome Beta', 'User Data') },
     { name: 'Google Chrome Dev', path: path.join(localAppData, 'Google', 'Chrome Dev', 'User Data') },
-    { name: 'Google Chrome SxS', path: path.join(localAppData, 'Google', 'Chrome SxS', 'User Data') },
     { name: 'Microsoft Edge Dev', path: path.join(localAppData, 'Microsoft', 'Edge Dev', 'User Data') }
   ];
 
@@ -128,8 +127,48 @@ function decryptCookie(encBuf, aesKey) {
         return raw;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // DPAPI fallback for older cookie records
+    try {
+      const psScript = `
+        Add-Type -AssemblyName System.Security;
+        $b = [Convert]::FromBase64String('${encBuf.toString('base64')}');
+        $dec = [System.Security.Cryptography.ProtectedData]::Unprotect($b, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser);
+        [Convert]::ToBase64String($dec);
+      `.replace(/\r?\n\s*/g, ' ');
+      const outB64 = execSync(`powershell.exe -NoProfile -NonInteractive -Command "${psScript}"`, {
+        encoding: 'utf8',
+        windowsHide: true
+      }).trim();
+      const dec = Buffer.from(outB64, 'base64').toString('utf8');
+      if (isPrintableAscii(dec)) return dec;
+    } catch (e2) {}
+  }
   return null;
+}
+
+function copyDbSafely(srcPath, destPath) {
+  try {
+    fs.copyFileSync(srcPath, destPath);
+    return true;
+  } catch (e) {
+    // If locked by running browser, use PowerShell to copy with ReadWrite shared lock mode
+    try {
+      const ps = `
+        $src = '${srcPath.replace(/'/g, "''")}';
+        $dst = '${destPath.replace(/'/g, "''")}';
+        $inStream = [System.IO.File]::Open($src, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite);
+        $outStream = [System.IO.File]::Open($dst, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None);
+        $inStream.CopyTo($outStream);
+        $inStream.Close();
+        $outStream.Close();
+      `.replace(/\r?\n\s*/g, ' ');
+      execSync(`powershell.exe -NoProfile -NonInteractive -Command "${ps}"`, { windowsHide: true });
+      return fs.existsSync(destPath) && fs.statSync(destPath).size > 0;
+    } catch (e2) {
+      return false;
+    }
+  }
 }
 
 async function extractAllCookies() {
@@ -143,7 +182,7 @@ async function extractAllCookies() {
     const masterKey = getMasterKey(localStatePath);
     if (!masterKey) continue;
 
-    const profileDirs = ['Default'];
+    const profileDirs = ['Default', ''];
     try {
       const entries = fs.readdirSync(b.path, { withFileTypes: true });
       for (const entry of entries) {
@@ -154,10 +193,11 @@ async function extractAllCookies() {
     } catch (e) {}
 
     for (const profile of profileDirs) {
-      const pDir = path.join(b.path, profile);
+      const pDir = profile ? path.join(b.path, profile) : b.path;
       const candidates = [
         path.join(pDir, 'Network', 'Cookies'),
         path.join(pDir, 'Cookies'),
+        path.join(b.path, 'Default', 'Network', 'Cookies'),
         path.join(b.path, 'Network', 'Cookies'),
         path.join(b.path, 'Cookies')
       ];
@@ -166,11 +206,8 @@ async function extractAllCookies() {
         if (!fs.existsSync(dbPath)) continue;
 
         const tmpPath = path.join(os.tmpdir(), `ytm_c_${Date.now()}_${Math.random().toString(36).substring(2)}.db`);
-        try {
-          fs.copyFileSync(dbPath, tmpPath);
-        } catch (e) {
-          continue;
-        }
+        const copied = copyDbSafely(dbPath, tmpPath);
+        if (!copied) continue;
 
         try {
           const fileBuf = fs.readFileSync(tmpPath);
@@ -206,7 +243,7 @@ async function extractAllCookies() {
               try { fs.unlinkSync(tmpPath); } catch (e) {}
               return {
                 success: true,
-                browser: `${b.name} (${profile})`,
+                browser: profile ? `${b.name} (${profile})` : b.name,
                 cookies: cookies
               };
             }
@@ -221,7 +258,39 @@ async function extractAllCookies() {
     }
   }
 
-  return { success: false, error: 'NoCookies', message: 'No logged-in YouTube session cookies found.' };
+  return { success: false, error: 'NoCookies', message: 'No logged-in YouTube session cookies found in any installed browser.' };
+}
+
+async function exportNetscapeCookiesFile(outputPath) {
+  try {
+    const res = await extractAllCookies();
+    if (!res.success || !res.cookies || res.cookies.length === 0) {
+      return { success: false, error: res.error || 'NoCookies' };
+    }
+
+    let cookieContent = '# Netscape HTTP Cookie File\n';
+    for (const c of res.cookies) {
+      const domain = c.domain.startsWith('.') ? c.domain : '.' + c.domain;
+      const includeSubDomain = 'TRUE';
+      const cPath = c.path || '/';
+      const secure = c.secure ? 'TRUE' : 'FALSE';
+      const expiration = Math.floor(Date.now() / 1000) + (3600 * 24 * 365);
+      cookieContent += `${domain}\t${includeSubDomain}\t${cPath}\t${secure}\t${expiration}\t${c.name}\t${c.value}\n`;
+    }
+
+    const dir = path.dirname(outputPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(outputPath, cookieContent, 'utf8');
+
+    return {
+      success: true,
+      browser: res.browser,
+      cookieCount: res.cookies.length,
+      path: outputPath
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
 }
 
 if (require.main === module) {
@@ -232,4 +301,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { extractAllCookies };
+module.exports = { extractAllCookies, exportNetscapeCookiesFile };

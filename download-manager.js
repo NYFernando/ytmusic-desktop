@@ -103,26 +103,48 @@ class DownloadManager {
   async exportCookies() {
     try {
       const cookiesPath = path.join(this.app.getPath('userData'), 'yt-cookies.txt');
-      if (!this.session) return cookiesPath;
+      
+      // 1. Try to get cookies from current in-app Electron session if user is logged in
+      let hasValidSessionCookies = false;
+      if (this.session) {
+        try {
+          const allSessionCookies = await this.session.defaultSession.cookies.get({});
+          const cookies = allSessionCookies.filter(c => 
+            c.domain.includes('youtube.com') || 
+            c.domain.includes('google.com')
+          );
 
-      const allSessionCookies = await this.session.defaultSession.cookies.get({});
-      const cookies = allSessionCookies.filter(c => 
-        c.domain.includes('youtube.com') || 
-        c.domain.includes('google.com')
-      );
-
-      let cookieContent = "# Netscape HTTP Cookie File\n";
-      if (cookies && cookies.length > 0) {
-        for (const c of cookies) {
-          const domain = c.domain || '.youtube.com';
-          const includeSubDomain = domain.startsWith('.') ? 'TRUE' : 'FALSE';
-          const cPath = c.path || '/';
-          const secure = c.secure ? 'TRUE' : 'FALSE';
-          const expiration = c.expirationDate ? Math.floor(c.expirationDate) : 0;
-          cookieContent += `${domain}\t${includeSubDomain}\t${cPath}\t${secure}\t${expiration}\t${c.name}\t${c.value}\n`;
-        }
+          if (cookies && cookies.some(c => ['SID', 'SAPISID', 'HSID', '__Secure-3PSID', 'LOGIN_INFO'].includes(c.name))) {
+            hasValidSessionCookies = true;
+            let cookieContent = "# Netscape HTTP Cookie File\n";
+            for (const c of cookies) {
+              const domain = c.domain || '.youtube.com';
+              const includeSubDomain = domain.startsWith('.') ? 'TRUE' : 'FALSE';
+              const cPath = c.path || '/';
+              const secure = c.secure ? 'TRUE' : 'FALSE';
+              const expiration = c.expirationDate ? Math.floor(c.expirationDate) : Math.floor(Date.now() / 1000) + (3600 * 24 * 365);
+              cookieContent += `${domain}\t${includeSubDomain}\t${cPath}\t${secure}\t${expiration}\t${c.name}\t${c.value}\n`;
+            }
+            fs.writeFileSync(cookiesPath, cookieContent, 'utf8');
+            return cookiesPath;
+          }
+        } catch (e) {}
       }
-      fs.writeFileSync(cookiesPath, cookieContent, 'utf8');
+
+      // 2. If in-app session has no login cookies, auto-import from Opera GX / Chrome / Edge directly!
+      try {
+        const { exportNetscapeCookiesFile } = require('./cookie-importer.js');
+        const importRes = await exportNetscapeCookiesFile(cookiesPath);
+        if (importRes.success && fs.existsSync(cookiesPath) && fs.statSync(cookiesPath).size > 100) {
+          return cookiesPath;
+        }
+      } catch (e) {}
+
+      // 3. Fallback to existing file if present
+      if (fs.existsSync(cookiesPath) && fs.statSync(cookiesPath).size > 100) {
+        return cookiesPath;
+      }
+
       return cookiesPath;
     } catch (e) {
       console.error('[DownloadManager] Error exporting cookies:', e);
@@ -387,8 +409,11 @@ class DownloadManager {
     const ytdlpArgs = [
       '--remote-components', 'ejs:github',
       '--user-agent', this.config.chromeUA || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0 Safari/537.36',
+      '--extractor-args', 'youtube:player_client=android,web',
       '--write-thumbnail',
       '--convert-thumbnails', 'jpg',
+      '--no-overwrites',
+      '--continue',
       '-f', 'ba/ba*',
       '-x',
       '--audio-format', 'mp3',
