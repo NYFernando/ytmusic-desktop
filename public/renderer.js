@@ -2776,6 +2776,128 @@ if (dockBtnCollapse && browserModeQuickDock) {
   } catch (err) {}
 }
 
+// Floating Browser Mode Quick Action Dock Draggable Physics & Position Persistence
+const dockDragHandle = document.getElementById('dock-drag-handle');
+
+if (browserModeQuickDock) {
+  let isDraggingDock = false;
+  let hasMovedDuringDrag = false;
+  let startPointerX = 0;
+  let startPointerY = 0;
+  let initialDockLeft = 0;
+  let initialDockTop = 0;
+
+  function restoreDockPosition() {
+    try {
+      const savedX = localStorage.getItem('ytm-quick-dock-pos-x');
+      const savedY = localStorage.getItem('ytm-quick-dock-pos-y');
+      if (savedX !== null && savedY !== null) {
+        const x = parseFloat(savedX);
+        const y = parseFloat(savedY);
+        if (!isNaN(x) && !isNaN(y)) {
+          const parent = browserModeQuickDock.offsetParent || document.body;
+          const parentWidth = parent.clientWidth || window.innerWidth;
+          const parentHeight = parent.clientHeight || window.innerHeight;
+          const dockWidth = browserModeQuickDock.offsetWidth || 300;
+          const dockHeight = browserModeQuickDock.offsetHeight || 40;
+
+          const boundedX = Math.max(8, Math.min(parentWidth - dockWidth - 8, x));
+          const boundedY = Math.max(8, Math.min(parentHeight - dockHeight - 80, y));
+
+          browserModeQuickDock.style.right = 'auto';
+          browserModeQuickDock.style.left = `${boundedX}px`;
+          browserModeQuickDock.style.top = `${boundedY}px`;
+        }
+      }
+    } catch (err) {}
+  }
+
+  // Restore saved dock position on startup
+  setTimeout(restoreDockPosition, 60);
+
+  function onDockPointerDown(e) {
+    // If clicking an action button (other than drag handle), do not drag
+    if (e.target.closest('.dock-btn') && !e.target.closest('#dock-drag-handle')) {
+      return;
+    }
+
+    isDraggingDock = true;
+    hasMovedDuringDrag = false;
+    startPointerX = e.clientX;
+    startPointerY = e.clientY;
+
+    const rect = browserModeQuickDock.getBoundingClientRect();
+    const parentRect = browserModeQuickDock.offsetParent ? browserModeQuickDock.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+
+    initialDockLeft = rect.left - parentRect.left;
+    initialDockTop = rect.top - parentRect.top;
+
+    browserModeQuickDock.style.right = 'auto';
+    browserModeQuickDock.style.left = `${initialDockLeft}px`;
+    browserModeQuickDock.style.top = `${initialDockTop}px`;
+    browserModeQuickDock.classList.add('is-dragging');
+
+    window.addEventListener('pointermove', onDockPointerMove);
+    window.addEventListener('pointerup', onDockPointerUp);
+    e.preventDefault();
+  }
+
+  function onDockPointerMove(e) {
+    if (!isDraggingDock) return;
+    const deltaX = e.clientX - startPointerX;
+    const deltaY = e.clientY - startPointerY;
+
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      hasMovedDuringDrag = true;
+    }
+
+    const parent = browserModeQuickDock.offsetParent || document.body;
+    const parentWidth = parent.clientWidth || window.innerWidth;
+    const parentHeight = parent.clientHeight || window.innerHeight;
+    const dockWidth = browserModeQuickDock.offsetWidth;
+    const dockHeight = browserModeQuickDock.offsetHeight;
+
+    let newLeft = initialDockLeft + deltaX;
+    let newTop = initialDockTop + deltaY;
+
+    newLeft = Math.max(8, Math.min(parentWidth - dockWidth - 8, newLeft));
+    newTop = Math.max(8, Math.min(parentHeight - dockHeight - 80, newTop));
+
+    browserModeQuickDock.style.left = `${newLeft}px`;
+    browserModeQuickDock.style.top = `${newTop}px`;
+  }
+
+  function onDockPointerUp() {
+    if (!isDraggingDock) return;
+    isDraggingDock = false;
+    browserModeQuickDock.classList.remove('is-dragging');
+
+    window.removeEventListener('pointermove', onDockPointerMove);
+    window.removeEventListener('pointerup', onDockPointerUp);
+
+    if (hasMovedDuringDrag) {
+      try {
+        const curLeft = parseFloat(browserModeQuickDock.style.left);
+        const curTop = parseFloat(browserModeQuickDock.style.top);
+        if (!isNaN(curLeft) && !isNaN(curTop)) {
+          localStorage.setItem('ytm-quick-dock-pos-x', curLeft);
+          localStorage.setItem('ytm-quick-dock-pos-y', curTop);
+        }
+      } catch (err) {}
+    }
+  }
+
+  if (dockDragHandle) {
+    dockDragHandle.addEventListener('pointerdown', onDockPointerDown);
+  }
+  browserModeQuickDock.addEventListener('pointerdown', onDockPointerDown);
+
+  window.addEventListener('resize', () => {
+    restoreDockPosition();
+  });
+}
+
+
 
 if (btnOpenSleepTimer) {
   btnOpenSleepTimer.addEventListener('click', () => openModal('modal-sleep-timer'));

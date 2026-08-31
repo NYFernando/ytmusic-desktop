@@ -1740,6 +1740,42 @@ body.focus-fullscreen .focus-lyrics-container.visible {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8), 0 0 15px rgba(239, 68, 68, 0.25);
 }
 
+.dock-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: #71717a;
+  padding: 3px 2px 3px 4px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.dock-drag-handle .material-icons-round {
+  font-size: 16px !important;
+}
+
+.dock-drag-handle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.browser-quick-dock.is-dragging {
+  cursor: grabbing !important;
+  opacity: 0.95;
+  transform: scale(1.02);
+  transition: none !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.9), 0 0 20px rgba(239, 68, 68, 0.35);
+  border-color: var(--color-primary, #ef4444);
+}
+
+.browser-quick-dock.is-dragging .dock-drag-handle {
+  cursor: grabbing !important;
+  color: var(--color-primary, #ef4444);
+}
+
 .dock-buttons-container {
   display: flex;
   align-items: center;
