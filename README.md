@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-Personal-10b981.svg?style=for-the-badge)
 ![Electron](https://img.shields.io/badge/built%20with-Electron%20%26%20WebAudio-a855f7.svg?style=for-the-badge)
 
-**A next-generation, high-performance desktop client for YouTube Music featuring a 10-band graphic equalizer, floating Picture-in-Picture mini player, resumable offline download manager, dynamic visualizers, bespoke theme studio, and Discord Rich Presence.**
+**A next-generation, high-performance desktop client for YouTube Music featuring a 10-band graphic equalizer, floating Picture-in-Picture mini player, movable & collapsible in-app quick dock, resumable offline download manager, dynamic visualizers, bespoke theme studio, and Discord Rich Presence.**
 
 *Developed & Created with passion by **Nethum Fernando***
 
@@ -28,15 +28,22 @@
 - **Live Two-Way Sync:** Instant real-time updates for song title, artist, album art, progress bar, play/pause, like, and skip controls.
 - **Quick Expand:** 1-click restore to bring the main app into focus.
 
+### 🧰 Draggable & Collapsible Floating Quick Dock
+- **In-Browser Quick Action Center:** Floating acrylic dock providing instant access to Offline Library, Downloads Manager, Mini PiP, Equalizer, and 1-Click Song/Playlist Downloaders.
+- **Free-Form Draggable Movement:** Grab the dedicated grip handle or dock body to place the panel anywhere on screen with automatic viewport boundary limits.
+- **Fluid Spring Collapse:** Collapse the dock into a sleek, compact pill (`[ ‹ Quick Tools ]`) to maintain an unobstructed web view.
+- **Live Notification Badges:** Active download task counts and glowing status pulses stay visible even when the dock is collapsed.
+- **Persistent Positioning:** Remembers custom screen coordinates and collapsed states across application and laptop restarts.
+
 ### 📥 High-Speed Resumable Offline Download Manager
-- **Independent Downloads View:** Dedicated sidebar tab and floating quick dock button with animated download counter badges.
+- **Independent Downloads View:** Dedicated sidebar tab and quick dock button with animated download counter badges.
 - **Resumable Queue:** Pause and resume single songs or entire playlists mid-download; tasks persist across application and system restarts.
 - **Smart Song Deduplication:** Automatic scan and cleanup tools to find duplicate offline songs and save disk space.
 - **Automatic High-Res Artwork Fetcher:** Auto-embeds metadata and high-res cover art from YouTube and iTunes Search APIs.
 
 ### 🎨 Theme Studio & Visualizer Engine
 - **5 Bespoke Color Themes:**
-  - 🔴 **Cyberpunk Crimson** (Default signature neon red)
+  - 🔴 **Cyberpunk Crimson** (Signature neon red glow)
   - 🔵 **Neon Tokyo Cyan** (Electric blue / cyan glow)
   - 🟢 **Matrix Emerald** (Cyber green glow)
   - 🟣 **Synthwave Sunset** (Deep magenta / purple glow)
@@ -77,7 +84,7 @@ ytmusic-desktop/
 ├── public/
 │   ├── index.html           # Main Application UI & Modals
 │   ├── index.css            # Cyberpunk Design System & Theme Palettes
-│   ├── renderer.js          # Visualizers, Player Bar & State Controller
+│   ├── renderer.js          # Visualizers, Player Bar, Movable Quick Dock & Controllers
 │   ├── mini-player.html     # Floating PiP Window HTML
 │   ├── mini-player.css      # Acrylic Glassmorphism Styles
 │   └── mini-player.js       # PiP Mini Player UI Controller
