@@ -1722,7 +1722,7 @@ body.focus-fullscreen .focus-lyrics-container.visible {
   right: 14px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: rgba(15, 15, 20, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1731,12 +1731,91 @@ body.focus-fullscreen .focus-lyrics-container.visible {
   padding: 4px 6px;
   z-index: 99999;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(239, 68, 68, 0.15);
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 800px;
 }
 
 .browser-quick-dock:hover {
   border-color: rgba(239, 68, 68, 0.4);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8), 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+.dock-buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: translateX(0);
+  max-width: 650px;
+  overflow: hidden;
+}
+
+.dock-collapse-trigger {
+  padding: 4px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.dock-collapse-trigger:hover {
+  background: var(--color-primary, #ef4444);
+  border-color: var(--color-primary, #ef4444);
+  color: var(--color-primary-text, #ffffff);
+  box-shadow: 0 0 10px var(--color-primary-glow, rgba(239, 68, 68, 0.4));
+}
+
+.dock-collapse-icon {
+  font-size: 16px !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed State */
+.browser-quick-dock.collapsed {
+  padding: 4px 8px 4px 6px;
+  border-radius: 18px;
+  background: rgba(15, 15, 20, 0.92);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.browser-quick-dock.collapsed .dock-buttons-container {
+  max-width: 0;
+  opacity: 0;
+  margin: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+}
+
+.browser-quick-dock.collapsed .dock-collapse-trigger {
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  padding: 3px 8px;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #f4f4f5;
+}
+
+.browser-quick-dock.collapsed .dock-collapse-icon {
+  transform: rotate(180deg);
+}
+
+.browser-quick-dock.collapsed .dock-collapsed-label {
+  display: inline !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .dock-btn {
@@ -1753,6 +1832,7 @@ body.focus-fullscreen .focus-lyrics-container.visible {
   cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .dock-btn .material-icons-round {
@@ -1760,11 +1840,11 @@ body.focus-fullscreen .focus-lyrics-container.visible {
 }
 
 .dock-btn:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
+  background: var(--color-primary, #ef4444);
+  border-color: var(--color-primary, #ef4444);
+  color: var(--color-primary-text, #ffffff);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 2px 8px var(--color-primary-glow, rgba(239, 68, 68, 0.35));
 }
 
 .dock-btn.downloading {

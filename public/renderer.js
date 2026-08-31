@@ -61,6 +61,9 @@ const btnTogglePip = document.getElementById('btn-toggle-pip');
 const btnOpenSettings = document.getElementById('btn-open-settings');
 const dockBtnPip = document.getElementById('dock-btn-pip');
 const dockBtnEq = document.getElementById('dock-btn-eq');
+const dockBtnCollapse = document.getElementById('dock-btn-collapse');
+const browserModeQuickDock = document.getElementById('browser-mode-quick-dock');
+const dockCollapsedBadge = document.getElementById('dock-collapsed-badge');
 const titlebarSleepLabel = document.getElementById('titlebar-sleep-label');
 
 // Progress/Volume sliders
@@ -1567,7 +1570,7 @@ function updateDownloadsBadge() {
   const pendingCount = downloadTasks.filter(t => t.status === 'paused').length;
   const totalIncomplete = activeCount + pendingCount;
 
-  [badge, sidebarBadge, dockBadge].forEach(b => {
+  [badge, sidebarBadge, dockBadge, dockCollapsedBadge].forEach(b => {
     if (!b) return;
     if (totalIncomplete > 0) {
       b.innerText = totalIncomplete;
@@ -2753,6 +2756,26 @@ if (btnOpenEq) {
 if (dockBtnEq) {
   dockBtnEq.addEventListener('click', () => openModal('modal-equalizer'));
 }
+
+// Floating Browser Mode Quick Action Dock Collapse Toggle
+if (dockBtnCollapse && browserModeQuickDock) {
+  dockBtnCollapse.addEventListener('click', (e) => {
+    e.stopPropagation();
+    browserModeQuickDock.classList.toggle('collapsed');
+    const isCollapsed = browserModeQuickDock.classList.contains('collapsed');
+    try {
+      localStorage.setItem('ytm-quick-dock-collapsed', isCollapsed ? 'true' : 'false');
+    } catch (err) {}
+  });
+
+  // Restore saved dock collapsed state
+  try {
+    if (localStorage.getItem('ytm-quick-dock-collapsed') === 'true') {
+      browserModeQuickDock.classList.add('collapsed');
+    }
+  } catch (err) {}
+}
+
 
 if (btnOpenSleepTimer) {
   btnOpenSleepTimer.addEventListener('click', () => openModal('modal-sleep-timer'));

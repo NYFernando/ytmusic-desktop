@@ -216,30 +216,37 @@
 
         <!-- Floating Browser Mode Quick Action Dock -->
         <div id="browser-mode-quick-dock" class="browser-quick-dock">
-          <button id="dock-btn-offline-lib" class="dock-btn" title="Open Offline Library">
-            <span class="material-icons-round">offline_pin</span>
-            <span class="dock-btn-label">Offline Library</span>
-          </button>
-          <button id="dock-btn-downloads" class="dock-btn" title="Open Downloads Manager">
-            <span class="material-icons-round">download</span>
-            <span class="dock-btn-label">Downloads</span>
-            <span class="downloads-badge" id="dock-downloads-badge" style="display: none;">0</span>
-          </button>
-          <button id="dock-btn-pip" class="dock-btn" title="Floating Mini Player">
-            <span class="material-icons-round">picture_in_picture_alt</span>
-            <span class="dock-btn-label">Mini PiP</span>
-          </button>
-          <button id="dock-btn-eq" class="dock-btn" title="Equalizer & Bass Boost">
-            <span class="material-icons-round">equalizer</span>
-            <span class="dock-btn-label">EQ</span>
-          </button>
-          <button id="dock-btn-download-song" class="dock-btn" title="Download Current Song to Offline Library">
-            <span class="material-icons-round">add_circle</span>
-            <span class="dock-btn-label">Download Song</span>
-          </button>
-          <button id="dock-btn-download-playlist" class="dock-btn" title="Download Active Playlist to Offline Library">
-            <span class="material-icons-round">queue_music</span>
-            <span class="dock-btn-label">Download Playlist</span>
+          <div class="dock-buttons-container" id="dock-buttons-container">
+            <button id="dock-btn-offline-lib" class="dock-btn" title="Open Offline Library">
+              <span class="material-icons-round">offline_pin</span>
+              <span class="dock-btn-label">Offline Library</span>
+            </button>
+            <button id="dock-btn-downloads" class="dock-btn" title="Open Downloads Manager">
+              <span class="material-icons-round">download</span>
+              <span class="dock-btn-label">Downloads</span>
+              <span class="downloads-badge" id="dock-downloads-badge" style="display: none;">0</span>
+            </button>
+            <button id="dock-btn-pip" class="dock-btn" title="Floating Mini Player">
+              <span class="material-icons-round">picture_in_picture_alt</span>
+              <span class="dock-btn-label">Mini PiP</span>
+            </button>
+            <button id="dock-btn-eq" class="dock-btn" title="Equalizer & Bass Boost">
+              <span class="material-icons-round">equalizer</span>
+              <span class="dock-btn-label">EQ</span>
+            </button>
+            <button id="dock-btn-download-song" class="dock-btn" title="Download Current Song to Offline Library">
+              <span class="material-icons-round">add_circle</span>
+              <span class="dock-btn-label">Download Song</span>
+            </button>
+            <button id="dock-btn-download-playlist" class="dock-btn" title="Download Active Playlist to Offline Library">
+              <span class="material-icons-round">queue_music</span>
+              <span class="dock-btn-label">Download Playlist</span>
+            </button>
+          </div>
+          <button id="dock-btn-collapse" class="dock-btn dock-collapse-trigger" title="Collapse / Expand Quick Tools">
+            <span class="material-icons-round dock-collapse-icon">chevron_right</span>
+            <span class="dock-collapsed-label" style="display: none;">Quick Tools</span>
+            <span class="downloads-badge dock-collapsed-badge" id="dock-collapsed-badge" style="display: none;">0</span>
           </button>
         </div>
       </div>
