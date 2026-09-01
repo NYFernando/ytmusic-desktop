@@ -105,7 +105,6 @@ class DownloadManager {
       const cookiesPath = path.join(this.app.getPath('userData'), 'yt-cookies.txt');
       
       // 1. Try to get cookies from current in-app Electron session if user is logged in
-      let hasValidSessionCookies = false;
       if (this.session) {
         try {
           const allSessionCookies = await this.session.defaultSession.cookies.get({});
@@ -114,8 +113,7 @@ class DownloadManager {
             c.domain.includes('google.com')
           );
 
-          if (cookies && cookies.some(c => ['SID', 'SAPISID', 'HSID', '__Secure-3PSID', 'LOGIN_INFO'].includes(c.name))) {
-            hasValidSessionCookies = true;
+          if (cookies && cookies.length > 0) {
             let cookieContent = "# Netscape HTTP Cookie File\n";
             for (const c of cookies) {
               const domain = c.domain || '.youtube.com';
@@ -131,16 +129,7 @@ class DownloadManager {
         } catch (e) {}
       }
 
-      // 2. If in-app session has no login cookies, auto-import from Opera GX / Chrome / Edge directly!
-      try {
-        const { exportNetscapeCookiesFile } = require('./cookie-importer.js');
-        const importRes = await exportNetscapeCookiesFile(cookiesPath);
-        if (importRes.success && fs.existsSync(cookiesPath) && fs.statSync(cookiesPath).size > 100) {
-          return cookiesPath;
-        }
-      } catch (e) {}
-
-      // 3. Fallback to existing file if present
+      // 2. Fallback to existing exported cookie file if present
       if (fs.existsSync(cookiesPath) && fs.statSync(cookiesPath).size > 100) {
         return cookiesPath;
       }

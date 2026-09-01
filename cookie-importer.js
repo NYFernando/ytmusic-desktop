@@ -41,6 +41,29 @@ function detectDefaultBrowserName() {
   return null;
 }
 
+function isBrowserRunning(browserName) {
+  try {
+    const processMap = {
+      'Opera GX': ['opera'],
+      'Opera': ['opera'],
+      'Google Chrome': ['chrome'],
+      'Microsoft Edge': ['msedge'],
+      'Brave': ['brave'],
+      'Vivaldi': ['vivaldi']
+    };
+
+    const exes = processMap[browserName] || ['chrome', 'opera', 'msedge', 'brave'];
+    const ps = `Get-Process ${exes.join(',')} -ErrorAction SilentlyContinue | Select-Object -First 1`;
+    const out = execSync(`powershell.exe -NoProfile -NonInteractive -Command "${ps}"`, {
+      encoding: 'utf8',
+      windowsHide: true
+    }).trim();
+    return out.length > 0;
+  } catch (e) {
+    return false;
+  }
+}
+
 function getBrowserRoots() {
   const localAppData = process.env.LOCALAPPDATA || '';
   const appData = process.env.APPDATA || '';
@@ -147,36 +170,22 @@ function decryptCookie(encBuf, aesKey) {
   return null;
 }
 
-function copyDbSafely(srcPath, destPath) {
-  try {
-    fs.copyFileSync(srcPath, destPath);
-    return true;
-  } catch (e) {
-    // If locked by running browser, use PowerShell to copy with ReadWrite shared lock mode
-    try {
-      const ps = `
-        $src = '${srcPath.replace(/'/g, "''")}';
-        $dst = '${destPath.replace(/'/g, "''")}';
-        $inStream = [System.IO.File]::Open($src, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite);
-        $outStream = [System.IO.File]::Open($dst, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None);
-        $inStream.CopyTo($outStream);
-        $inStream.Close();
-        $outStream.Close();
-      `.replace(/\r?\n\s*/g, ' ');
-      execSync(`powershell.exe -NoProfile -NonInteractive -Command "${ps}"`, { windowsHide: true });
-      return fs.existsSync(destPath) && fs.statSync(destPath).size > 0;
-    } catch (e2) {
-      return false;
-    }
-  }
-}
-
 async function extractAllCookies() {
   const SQL = await initSqlJs();
   const roots = getBrowserRoots();
 
   for (const b of roots) {
     if (!fs.existsSync(b.path)) continue;
+
+    // Check if the browser process is currently running
+    if (isBrowserRunning(b.name)) {
+      return {
+        success: false,
+        error: 'BrowserIsRunning',
+        browser: b.name,
+        message: `${b.name} is currently open. Please close ${b.name} so Windows releases the cookie database lock, then try again.`
+      };
+    }
 
     const localStatePath = path.join(b.path, 'Local State');
     const masterKey = getMasterKey(localStatePath);
@@ -206,8 +215,19 @@ async function extractAllCookies() {
         if (!fs.existsSync(dbPath)) continue;
 
         const tmpPath = path.join(os.tmpdir(), `ytm_c_${Date.now()}_${Math.random().toString(36).substring(2)}.db`);
-        const copied = copyDbSafely(dbPath, tmpPath);
-        if (!copied) continue;
+        try {
+          fs.copyFileSync(dbPath, tmpPath);
+        } catch (copyErr) {
+          if (copyErr.code === 'EBUSY' || copyErr.code === 'EPERM') {
+            return {
+              success: false,
+              error: 'BrowserIsRunning',
+              browser: b.name,
+              message: `${b.name} is currently open. Please close ${b.name} so Windows releases the cookie database lock, then try again.`
+            };
+          }
+          continue;
+        }
 
         try {
           const fileBuf = fs.readFileSync(tmpPath);
@@ -258,14 +278,14 @@ async function extractAllCookies() {
     }
   }
 
-  return { success: false, error: 'NoCookies', message: 'No logged-in YouTube session cookies found in any installed browser.' };
+  return { success: false, error: 'NoCookies', message: 'No signed-in YouTube session found. Please make sure you are logged into YouTube in Opera GX, Chrome, or Edge, close the browser, and try again.' };
 }
 
 async function exportNetscapeCookiesFile(outputPath) {
   try {
     const res = await extractAllCookies();
     if (!res.success || !res.cookies || res.cookies.length === 0) {
-      return { success: false, error: res.error || 'NoCookies' };
+      return { success: false, error: res.error || 'NoCookies', message: res.message };
     }
 
     let cookieContent = '# Netscape HTTP Cookie File\n';
@@ -301,4 +321,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { extractAllCookies, exportNetscapeCookiesFile };
+module.exports = { extractAllCookies, exportNetscapeCookiesFile, isBrowserRunning };

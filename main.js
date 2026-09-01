@@ -715,6 +715,22 @@ ipcMain.handle('get-user-youtube-playlists', async () => {
 // --- Extract & Inject Browser Session Cookies (Opera GX / Chrome / Edge / Brave) ---
 ipcMain.handle('sync-browser-cookies', async () => {
   const win = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+
+  // Show native Windows confirmation popup first
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'question',
+    buttons: ['Sync & Log In', 'Cancel'],
+    defaultId: 0,
+    cancelId: 1,
+    title: 'Sync YouTube Music Account',
+    message: 'Sync Account from Browser',
+    detail: 'Please close your web browser (Opera GX, Chrome, Edge, Brave) so Windows releases the session file lock, then click "Sync & Log In".'
+  });
+
+  if (response !== 0) {
+    return { success: false, cancelled: true };
+  }
+
   try {
     const cookiesPath = path.join(app.getPath('userData'), 'yt-cookies.txt');
     const dlCookiesPath = path.join(DOWNLOAD_DIR, 'yt-cookies.txt');
@@ -723,10 +739,10 @@ ipcMain.handle('sync-browser-cookies', async () => {
     if (!res.success) {
       if (win) {
         dialog.showMessageBox(win, {
-          type: 'error',
-          title: 'No Session Found',
-          message: 'No signed-in YouTube session found',
-          detail: res.message || 'Please log in to YouTube in Opera GX, Chrome, or Edge, and try again.'
+          type: res.error === 'BrowserIsRunning' ? 'warning' : 'error',
+          title: res.error === 'BrowserIsRunning' ? 'Browser is Still Open' : 'No Session Found',
+          message: res.error === 'BrowserIsRunning' ? `${res.browser} is still running` : 'No signed-in YouTube session found',
+          detail: res.message || 'Please close your browser and try again.'
         });
       }
       return res;
@@ -1362,15 +1378,6 @@ if (!gotTheLock) {
     });
 
     createWindow();
-
-    // Auto-sync browser session cookies in the background so downloader is authenticated
-    setTimeout(async () => {
-      try {
-        const cookiesPath = path.join(app.getPath('userData'), 'yt-cookies.txt');
-        await exportNetscapeCookiesFile(cookiesPath);
-        await exportNetscapeCookiesFile(path.join(DOWNLOAD_DIR, 'yt-cookies.txt'));
-      } catch (e) {}
-    }, 2000);
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
