@@ -149,32 +149,8 @@ function createWindow() {
 function registerGlobalMediaShortcuts() {
   try {
     globalShortcut.unregisterAll();
-    
-    globalShortcut.register('MediaPlayPause', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('global-shortcut-command', { command: 'play-pause' });
-      }
-    });
 
-    globalShortcut.register('MediaNextTrack', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('global-shortcut-command', { command: 'next' });
-      }
-    });
-
-    globalShortcut.register('MediaPreviousTrack', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('global-shortcut-command', { command: 'previous' });
-      }
-    });
-
-    globalShortcut.register('MediaStop', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('global-shortcut-command', { command: 'pause' });
-      }
-    });
-
-    // Custom secondary hotkeys (Ctrl+Alt+Space, etc.)
+    // Custom secondary hotkeys (Ctrl+Alt+Space, Ctrl+Alt+Right, Ctrl+Alt+Left)
     globalShortcut.register('CommandOrControl+Alt+Space', () => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('global-shortcut-command', { command: 'play-pause' });

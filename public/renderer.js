@@ -463,71 +463,60 @@ function updateUI(state) {
 }
 
 // --- System Media Transport Controls (SMTC) & Windows Taskbar / Windhawk Integration ---
-let silentAudioKeeper = null;
-
-function initSilentAudioKeeper() {
-  if (silentAudioKeeper) return;
-  try {
-    // Create an inaudible, silent audio element that keeps Chromium's Windows SMTC session active
-    silentAudioKeeper = document.createElement('audio');
-    silentAudioKeeper.loop = true;
-    silentAudioKeeper.volume = 0.001;
-    // 1-second silent WAV base64
-    silentAudioKeeper.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP//';
-  } catch (e) {}
-}
+let lastMediaTitle = '';
+let lastMediaArtist = '';
+let lastMediaArt = '';
+let lastMediaPlaying = null;
 
 function updateSystemMediaSession(state) {
   if (!('mediaSession' in navigator)) return;
 
   try {
-    initSilentAudioKeeper();
+    if (state && state.title) {
+      // Only rebuild MediaMetadata when track metadata actually changes
+      if (lastMediaTitle !== state.title || lastMediaArtist !== state.artist || lastMediaArt !== state.art) {
+        lastMediaTitle = state.title;
+        lastMediaArtist = state.artist || '';
+        lastMediaArt = state.art || '';
 
-    if (state && (state.title || state.artist)) {
-      const artwork = [];
-      if (state.art && !state.art.startsWith('data:image/svg')) {
-        artwork.push(
-          { src: state.art, sizes: '96x96', type: 'image/jpeg' },
-          { src: state.art, sizes: '128x128', type: 'image/jpeg' },
-          { src: state.art, sizes: '256x256', type: 'image/jpeg' },
-          { src: state.art, sizes: '512x512', type: 'image/jpeg' }
-        );
+        const artwork = [];
+        if (state.art && !state.art.startsWith('data:image/svg')) {
+          artwork.push(
+            { src: state.art, sizes: '96x96', type: 'image/jpeg' },
+            { src: state.art, sizes: '128x128', type: 'image/jpeg' },
+            { src: state.art, sizes: '256x256', type: 'image/jpeg' },
+            { src: state.art, sizes: '512x512', type: 'image/jpeg' }
+          );
+        }
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: state.title || 'YouTube Music',
+          artist: state.artist || 'Unknown Artist',
+          album: state.album || 'YouTube Music Desktop',
+          artwork: artwork
+        });
       }
 
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: state.title || 'YouTube Music',
-        artist: state.artist || 'Unknown Artist',
-        album: state.album || 'YouTube Music Desktop',
-        artwork: artwork
-      });
-
-      navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
-
-      // Keep Windows SMTC active when playing
-      if (state.isPlaying) {
-        if (silentAudioKeeper && silentAudioKeeper.paused && !isOfflineMode) {
-          silentAudioKeeper.play().catch(() => {});
-        }
-      } else {
-        if (silentAudioKeeper && !silentAudioKeeper.paused) {
-          silentAudioKeeper.pause();
-        }
+      // Update playbackState only on state change
+      if (lastMediaPlaying !== state.isPlaying) {
+        lastMediaPlaying = state.isPlaying;
+        navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
       }
 
-      // Position state sync for seekbars in Windows Taskbar / Windhawk
-      if ('setPositionState' in navigator.mediaSession && state.duration > 0) {
+      // Update position state for seekbars (if duration > 0)
+      if ('setPositionState' in navigator.mediaSession && state.duration > 0 && typeof state.progress === 'number') {
         try {
           navigator.mediaSession.setPositionState({
             duration: Math.max(0, state.duration),
             playbackRate: 1,
-            position: Math.min(state.duration, Math.max(0, state.progress || 0))
+            position: Math.min(state.duration, Math.max(0, state.progress))
           });
         } catch (e) {}
       }
     } else {
-      navigator.mediaSession.playbackState = 'none';
-      if (silentAudioKeeper && !silentAudioKeeper.paused) {
-        silentAudioKeeper.pause();
+      if (lastMediaPlaying !== false) {
+        lastMediaPlaying = false;
+        navigator.mediaSession.playbackState = 'none';
       }
     }
   } catch (err) {
@@ -535,7 +524,7 @@ function updateSystemMediaSession(state) {
   }
 }
 
-// Register SMTC hardware / taskbar action handlers
+// Register SMTC hardware / taskbar action handlers once
 if ('mediaSession' in navigator) {
   try {
     navigator.mediaSession.setActionHandler('play', () => {
@@ -555,25 +544,26 @@ if ('mediaSession' in navigator) {
       if (isOfflineMode) playNextOfflineTrack();
     });
     navigator.mediaSession.setActionHandler('seekto', (details) => {
-      if (details.seekTime !== undefined) {
+      if (details && details.seekTime !== undefined) {
         sendPlayerCommand('seek', details.seekTime);
         if (isOfflineMode) offlineAudioPlayer.currentTime = details.seekTime;
       }
     });
     navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-      const skipTime = details.seekOffset || 10;
+      const skipTime = details?.seekOffset || 10;
       const newTime = Math.max((currentPlaybackState.progress || 0) - skipTime, 0);
       sendPlayerCommand('seek', newTime);
       if (isOfflineMode) offlineAudioPlayer.currentTime = newTime;
     });
     navigator.mediaSession.setActionHandler('seekforward', (details) => {
-      const skipTime = details.seekOffset || 10;
+      const skipTime = details?.seekOffset || 10;
       const newTime = Math.min((currentPlaybackState.progress || 0) + skipTime, currentPlaybackState.duration || 0);
       sendPlayerCommand('seek', newTime);
       if (isOfflineMode) offlineAudioPlayer.currentTime = newTime;
     });
   } catch (e) {}
 }
+
 
 
 // --- Album Art Color Extraction Engine ---
