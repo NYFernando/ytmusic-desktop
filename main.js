@@ -17,6 +17,8 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
+app.commandLine.appendSwitch('enable-features', 'MediaSessionService,HardwareMediaKeyHandling');
+
 
 // Register custom protocol client
 if (process.defaultApp) {
