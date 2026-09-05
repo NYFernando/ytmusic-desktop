@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/local/ytmusic-desktop"
+    "url": "https://github.com/NYFernando/ytmusic-desktop.git"
   },
   "build": {
     "appId": "com.nethum.ytmusic.desktop",
