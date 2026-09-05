@@ -1,102 +1,148 @@
-# 🎵 YouTube Music Desktop
+<div align="center">
 
-A custom desktop client for YouTube Music built for Windows. It gives you a real 10-band equalizer, a picture-in-picture mini player that floats above your games, offline downloads that you can pause and resume, and full Discord status sync.
+<img src="public/icon.png" alt="YouTube Music Desktop" width="100" />
 
-Built by **Nethum Fernando**.
+# YouTube Music Desktop
 
----
+### A clean, powerful desktop client for YouTube Music on Windows.
+*Real 10-band equalizer, picture-in-picture mini player, resumable offline downloads, custom themes, and full Discord status sync.*
 
-## Why I Built This
+[![Release](https://img.shields.io/github/v/release/NYFernando/ytmusic-desktop?color=ef4444&style=for-the-badge&logo=github)](https://github.com/NYFernando/ytmusic-desktop/releases/latest)
+[![Platform](https://img.shields.io/badge/Windows-10%20%7C%2011-06b6d4?style=for-the-badge&logo=windows)](https://github.com/NYFernando/ytmusic-desktop/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/NYFernando/ytmusic-desktop/total?color=10b981&style=for-the-badge)](https://github.com/NYFernando/ytmusic-desktop/releases/latest)
+[![License](https://img.shields.io/badge/License-Personal-a855f7?style=for-the-badge)](LICENSE.txt)
 
-The default web app works fine in a browser tab, but it misses the desktop features you actually want when working or gaming. I wanted quick audio controls, heavy bass whenever I need it, offline playback for plane trips, and a mini player that stays pinned on top without getting in the way.
+<br />
 
-So I put this together.
+[**⬇️ Download Latest Installer (.exe)**](https://github.com/NYFernando/ytmusic-desktop/releases/latest) &nbsp;&bull;&nbsp; [**✨ Features**](#-what-makes-it-different) &nbsp;&bull;&nbsp; [**⌨️ Hotkeys**](#-keyboard-shortcuts) &nbsp;&bull;&nbsp; [**🛠️ Build From Source**](#-running-from-source-developers)
 
----
-
-## What's Inside
-
-### 10-Band Graphic Equalizer
-Fine-tune your sound across ten frequency bands from 32Hz to 16kHz. You get a dedicated preamp slider, a heavy bass boost knob, and quick presets for Rock, Hip Hop, Acoustic, and EDM. It runs on the Web Audio API and works on both live streams and your offline tracks.
-
-### Picture-in-Picture Mini Player
-A clean, compact window (330x115) that pins to the corner of your screen. You can skip tracks, hit like, check cover art, and jump back to the full app in one click. Perfect while gaming or coding.
-
-### Movable Floating Dock
-When you're browsing inside the app, a little dock floats right over the page. Drag it anywhere you like. If it blocks something, click collapse and it tucks away into a tiny pill while still showing live download badges.
-
-### Offline Download Manager
-Save individual songs or entire playlists directly as MP3s with auto-tagged metadata and high-res cover art. Downloads are fully resumable, so if your laptop sleeps or your Wi-Fi drops, they pick right back up when you're back online.
-
-### Custom Themes & Audio Visualizers
-Switch between neon red, cyan, emerald, purple, and pure OLED black. When music plays, turn on real-time visualizers like glowing bottom waves, frequency bars, or spinning vinyl rings.
-
-### Discord Rich Presence & Sleep Timer
-Shows whatever you're listening to directly on your Discord profile with album art and track progress. Plus, if you fall asleep listening to music, the sleep timer fades out your volume smoothly before pausing.
-
-### Browser Cookie Sync
-Log in directly inside the app, or sync your existing YouTube session from Chrome, Opera GX, Edge, or Brave in seconds with zero extra extensions needed.
+</div>
 
 ---
 
-## How It's Structured
+## 💡 Why this exists
 
-```
-ytmusic-desktop/
-├── main.js                  # App lifecycle, shortcuts, Discord RPC, and window management
-├── preload.js               # Secure context bridge between renderer and main process
-├── mini-preload.js          # Dedicated bridge for the floating mini player
-├── webview-preload.js       # Audio filter taps and YouTube Music DOM hooks
-├── download-manager.js      # Resumable download queue running yt-dlp & ffmpeg
-├── cookie-importer.js       # Windows DPAPI cookie decryptor
-├── discord-presence.js      # Discord Rich Presence integration
-├── bin/                     # Bundled yt-dlp and ffmpeg binaries
-├── public/
-│   ├── index.html           # Main user interface
-│   ├── index.css            # Dark theme styles and animations
-│   ├── renderer.js          # Player controls, visualizers, and dock physics
-│   ├── mini-player.html     # Floating mini player layout
-│   ├── mini-player.css      # Mini player styles
-│   └── mini-player.js       # Mini player logic
-└── package.json             # App metadata and build scripts
-```
+Listening to YouTube Music in a random browser tab gets annoying fast. You lose media keys when you switch windows, there's no real equalizer, you can't easily save tracks offline for trips, and there's no mini player to keep over your code or games.
+
+This app solves all of that. It wraps YouTube Music in a fast, lightweight desktop frame and adds the features you actually want every day.
 
 ---
 
-## Quick Start
+## ✨ What Makes It Different
 
-### What you need
-- Windows 10 or 11 (64-bit)
-- [Node.js](https://nodejs.org/) (v18 or higher if running from source)
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🎛️ 10-Band EQ & Bass Boost</h3>
+      <p>Full control across 10 frequency bands (32Hz to 16kHz) with dedicated preamp gain (-12dB to +12dB) and an analog-style bass boost knob. Comes with instant presets for Rock, Hip-Hop, Acoustic, EDM, and Vocal clarity.</p>
+    </td>
+    <td width="50%">
+      <h3>🪟 Picture-in-Picture Mini Player</h3>
+      <p>A compact acrylic widget (330x115) that pins to the corner of your screen. Skip tracks, hit like, adjust volume, and check album art without minimizing your games or work.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📥 Resumable Offline Downloads</h3>
+      <p>Download individual songs or entire playlists directly to MP3. If your Wi-Fi drops or your laptop sleeps, downloads automatically pause and pick back up right where they left off with embedded album art.</p>
+    </td>
+    <td width="50%">
+      <h3>🧰 Movable Floating Quick Dock</h3>
+      <p>A floating toolbar inside the browser view that gives you 1-click access to downloads, offline library, and audio tools. Drag it anywhere on screen or click collapse to tuck it into a subtle pill.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🎨 Custom Themes & Visualizers</h3>
+      <p>Choose from Cyberpunk Crimson, Neon Tokyo Cyan, Matrix Emerald, Synthwave Sunset, or OLED Pure Black. Turn on live audio visualizers that react to your music in real time.</p>
+    </td>
+    <td width="50%">
+      <h3>💬 Discord RPC & Sleep Timer</h3>
+      <p>Broadcast whatever you're listening to on Discord with album art and live progress bars. Set a sleep timer with gentle 10-second volume fade-out when listening in bed.</p>
+    </td>
+  </tr>
+</table>
 
-### Running locally
+---
+
+## 🚀 Quick Install (End Users)
+
+You don't need to install Node.js, Python, or any developer tools to use this app.
+
+1. Go to the [**Releases Page**](https://github.com/NYFernando/ytmusic-desktop/releases/latest).
+2. Download `YouTube-Music-Desktop-Setup-1.0.0.exe`.
+3. Run the installer and launch the app.
+4. *(Optional)* Click the gear icon (**⚙️**) in the top right to sync your existing browser login in one click.
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+Control your playback from anywhere on your PC, even while inside full-screen games:
+
+| Shortcut | Action |
+| :--- | :--- |
+| <kbd>Media Play / Pause</kbd> | Play or pause playback |
+| <kbd>Media Next</kbd> | Skip to next track |
+| <kbd>Media Previous</kbd> | Go back to previous track |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd> | Global play / pause toggle |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>→</kbd> | Global next track |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>←</kbd> | Global previous track |
+
+---
+
+## 🛠️ Running From Source (Developers)
+
+If you'd like to modify or build the app yourself:
+
 ```bash
-# Clone the repo
+# 1. Clone the repository
 git clone https://github.com/NYFernando/ytmusic-desktop.git
 cd ytmusic-desktop
 
-# Install packages
+# 2. Install dependencies
 npm install
 
-# Launch the app
+# 3. Start development build
 npm start
-```
 
-### Packaging into a Windows Setup (.exe)
-```bash
+# 4. Compile Windows installer (.exe)
 npm run dist
 ```
-The installer will be placed in your `dist/` directory as `YouTube-Music-Desktop-Setup-1.0.0.exe`.
 
 ---
 
-## Author
+## 📁 Project Architecture
 
-Created by **Nethum Fernando**
+```
+ytmusic-desktop/
+├── main.js                  # Main Electron process, shortcuts & Discord RPC
+├── preload.js               # Secure IPC bridge for renderer
+├── mini-preload.js          # Dedicated bridge for PiP Mini Player
+├── webview-preload.js       # YouTube Music DOM hooks & WebAudio DSP taps
+├── download-manager.js      # Resumable yt-dlp download queue
+├── cookie-importer.js       # Windows DPAPI cookie session sync
+├── discord-presence.js      # Discord Rich Presence client
+├── bin/                     # Standalone binaries (yt-dlp.exe, ffmpeg.exe)
+├── public/
+│   ├── index.html           # Main application interface
+│   ├── index.css            # Dark theme styles & visualizer canvases
+│   ├── renderer.js          # Player controls, dock physics & audio DSP
+│   ├── mini-player.html     # Floating PiP player markup
+│   ├── mini-player.css      # Acrylic glassmorphism styles
+│   └── mini-player.js       # PiP playback sync controller
+└── package.json             # Build configuration & scripts
+```
+
+---
+
+## 👤 Author
+
+Crafted by **Nethum Fernando**
 - GitHub: [@NYFernando](https://github.com/NYFernando)
 
 ---
 
-## License & Notes
+## 📄 License & Notice
 
-Personal project. YouTube and YouTube Music are trademarks of Google LLC.
+This project is created for personal use and desktop convenience. All YouTube and YouTube Music trademarks, logos, and service marks belong to Google LLC.
